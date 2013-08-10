@@ -1,0 +1,217 @@
+﻿@model IEnumerable<MajorsPool.Models.Pick>
+
+@{
+    ViewBag.Title = "Draft";
+}
+
+@*<h2>Picks</h2>*@
+
+<div>@ViewBag.Blah</div>
+
+<table style="border: none; border-width: 1px">
+    <tr>
+        @if (Convert.ToBoolean(Session["Admin"]))
+        {
+            <th>
+                ID
+            </th>
+        }
+        <th>
+            #
+        </th>
+        @*<th>
+            @Html.DisplayNameFor(model => model.Entrant.PaidStatus)
+        </th>*@
+        <th>
+            @Html.DisplayNameFor(model => model.Entrant)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Golfer)
+        </th>
+        <th>
+            Time of Pick
+        </th>
+        <th>
+            
+        </th>
+    </tr>
+                
+        @{
+            int nextUpUsersPickId;
+
+            try
+            {
+                nextUpUsersPickId = (from x in Model where x.PickTime == null orderby x.SeqNo select x.PickId).First();
+            }
+            catch
+            {
+                nextUpUsersPickId = -1;
+            }
+
+            var previousPickTime = DateTime.Now;
+        }
+
+        @foreach (var item in Model.ToList())
+        {
+            
+            bool showTime = (item.GolferId == null && item.PickId == nextUpUsersPickId);
+    
+            <tr>
+                @if (Convert.ToBoolean(Session["Admin"]))
+                {
+                    <td style="border: none; border-width: 1px; padding-right: 15px">
+                        @Html.DisplayFor(modelItem => item.PickId)
+                    </td>
+                }
+                <td style="white-space:nowrap; padding-right: 15px">
+                    @Html.DisplayFor(modelItem => item.SeqNo)
+                </td>
+                
+                <td style="white-space:nowrap; padding-right: 15px">
+                    @if (item.PickEligible)
+                    {
+                        @*<span style="padding-left: 2px; padding-right: 2px" class="highlighted">*@
+                        <span style="padding-left: 2px; padding-right: 2px; background-color: yellow; color: rgb(85, 68, 1)">
+                            @Html.DisplayFor(modelItem => item.Entrant.DisplayName)
+                        </span>
+                    }
+                    else
+                    {
+                        @Html.DisplayFor(modelItem => item.Entrant.DisplayName)
+                    }
+                </td>
+            
+                <td style="padding-right: 15px; white-space:nowrap;">
+                    @Html.DisplayFor(modelItem => item.Golfer.DisplayName)
+                </td>
+            
+                <td style="white-space:nowrap;">
+                    @if (item.PickTime != null)
+                    {
+                        // Convert UTC time to central.
+                        TimeZoneInfo cstZone = TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time");
+
+                        DateTime pickTimeWithKind = DateTime.SpecifyKind(Convert.ToDateTime(item.PickTime), DateTimeKind.Utc);
+
+                        DateTime cstTime = TimeZoneInfo.ConvertTimeFromUtc(Convert.ToDateTime(item.PickTime), cstZone);
+
+                        <span> @cstTime.ToString("MM/dd hh:mm tt") </span>
+                    }
+                </td>
+                <td style="white-space:nowrap;">
+                    @if (item.PickEligible || Convert.ToBoolean(Session["Admin"]))
+                    {
+                        <span>
+                            @Html.ActionLink("Choose your golfer", "Edit", new { id = item.PickId }, new { style = "class: linkColor" })
+
+                            @if (Convert.ToBoolean(Session["Admin"]))
+                            {
+                                <span>|</span>
+                                @Html.ActionLink("Delete", "Delete", new { id = item.PickId }, new { id = item.PickId })
+                            }
+                        </span>
+                    }
+                </td>
+                <td style="white-space:nowrap;">
+                    @if (showTime)
+                    {
+                        <span id='PickId_@item.PickId.ToString()' class='countdowntime' 
+                            data-startTime="@Convert.ToInt64(
+                                                new TimeSpan(DateTime.Now.Ticks - previousPickTime.Ticks).TotalMilliseconds / 10)">
+                        </span>
+                    }
+                    else if (item.PickEligible && !showTime)
+                    {
+                        <span style="color: white; background-color: red">&nbsp;Expired&nbsp;</span>
+                    }
+                </td>
+            </tr>
+    
+            if (item.PickTime != null)
+            {
+                previousPickTime = Convert.ToDateTime(item.PickTime);
+            }
+        }
+</table>
+
+@if (Convert.ToBoolean(Session["Admin"]))
+{
+    <p>
+        @Html.ActionLink("Create New", "Create")
+    </p>
+}
+
+<br />
+<br />
+
+@section Scripts {
+
+    <script>
+
+        function pad(str, max) {
+            str = str.toString();
+            return str.length < max ? pad("0" + str, max) : str;
+        }
+
+        var HOURS_TO_PICK = 12;
+        var countdownTimer;
+        var countdownCurrent;
+        var firstTime = true;
+
+        // jQuery.timer method takes the following arguments and returns a reference to the object.
+        // - a function 
+        // - time (in ms)
+        // - autostart
+        countdownTimer = $.timer(
+            function () {
+                if (firstTime) {
+                    if ($('.countdowntime').length > 0) {
+                        var timeLeft = (HOURS_TO_PICK * 60 * 60 * 100) - $('.countdowntime')[0].getAttribute("data-startTime");
+                        countdownCurrent = timeLeft;
+                    }
+                    firstTime = false;
+                }
+
+                var hour = parseInt(countdownCurrent / 360000);
+                var min = parseInt(countdownCurrent / 6000) - (hour * 60);
+                var sec = parseInt(countdownCurrent / 100) - (min * 60) - (hour * 3600);
+                var hourOutput = "00"; if (hour > 0) { hourOutput = pad(hour, 2); }
+                var minOutput = "00"; if (min > 0) { minOutput = pad(min, 2); }
+
+                $('.countdowntime').html(hourOutput + ":" + minOutput + ":" + pad(sec, 2));
+
+                if (countdownCurrent == 0) {
+                    countdownTimer.stop();
+                    $('.countdowntime').html('Time Expired');
+                    $('.countdowntime').css("background-color", "yellow");
+                    countdownReset();
+                } else {
+                    countdownCurrent -= 100;
+                    if (countdownCurrent < 0) { countdownCurrent = 0; }
+                }
+            }, 1000, true);
+
+        function countdownReset() {
+            var newCount = parseInt($('input[name=startTime]').val()) * 100;
+            if (newCount > 0) { countdownCurrent = newCount; }
+            countdownTimer.stop().once();
+        }
+
+  </script>
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

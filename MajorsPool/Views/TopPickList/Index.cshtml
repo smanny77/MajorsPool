@@ -1,0 +1,158 @@
+﻿@model IEnumerable<MajorsPool.Models.TopPickList>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<style>
+  #feedback { font-size: 1.4em; }
+  .gridOfGolfers .ui-selecting { background: #FECA40; }
+  .gridOfGolfers .ui-selected { background: #F39814; color: white; }
+  .gridOfGolfers { list-style-type: none; margin: 0; padding: 0; width: 450px; }
+  .gridOfGolfers li { margin: 3px; padding: 1px; width: 200px; height: 40px; line-height: 40px; font-size: 1em; text-align: center; vertical-align: middle; border: solid; border-width: 1px;  }
+</style>
+
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+
+<script>
+    
+</script>
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table>
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.EntrantId)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.EntrantId)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.TopPickListId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.TopPickListId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.TopPickListId })
+        </td>
+    </tr>
+}
+
+</table>
+
+<table id="tableOfGolfers">
+    <tr>
+        <td style="vertical-align: top;">
+            <ul id="selectableGolfers" class="gridOfGolfers" >
+                @foreach (var golfer in (List<MajorsPool.Models.Golfer>)ViewBag.AvailableGolfers)
+                {            
+                <li id="@golfer.GolferId" class="ui-state-highlight" style="vertical-align: middle;">@golfer.FirstName @golfer.LastName</li>
+                }
+            </ul>
+        </td>
+        <td style="vertical-align: top">
+            <ul id="selectedGolfers" class="gridOfGolfers" style=" background-color: yellow; min-height: 50px; min-width: 50px; vertical-align: middle">
+                @foreach (var item in Model.ToList())
+                {            
+                <li id="@item.GolferId" class="ui-state-default" onclick="removeTopPickEntry(@item.GolferId)">@item.Golfer.FirstName  @item.Golfer.LastName</li>
+                }
+            </ul>
+        </td>
+    </tr>
+</table>
+
+@* put modal here for user's security code *@
+
+@section Scripts {
+    <script>
+
+        var x = $('#selectableGolfers');
+
+        $(function () {
+
+            $("#selectableGolfers").selectable({
+
+                selected: function () {
+                    //debugger
+                    var selectableId = $('#selectableGolfers .ui-selected')[0].id;
+
+                    var itemToAppend = $('#selectableGolfers .ui-selected')[0].outerHTML.replace("ui-state-highlight ui-selectee ui-selected", "ui-state-highlight ui-selectee");
+                    var itemToAppend = itemToAppend.replace(";\">", ";\" onclick = \"removeTopPickEntry(" + selectableId + ");\">");
+
+                    $('#' + selectableId).remove();
+
+                    $('#selectedGolfers').append(itemToAppend);
+
+                    deleteAndSaveTopPicksList();
+                }
+            });
+
+            $("#selectedGolfers").sortable({
+                //connectWith: ".gridOfGolfers",
+                //dropOnEmpty: true
+            }).disableSelection();
+        });
+
+        $("#selectedGolfers").sortable({
+            update: function (event, ui) {
+                //debugger
+                deleteAndSaveTopPicksList();
+                //saveTopPicksList();
+            }
+        });
+
+        function deleteAndSaveTopPicksList()
+        {
+            $.ajax({
+                url: "/TopPickList/DeleteTopPicksList",
+                complete: function (result) {
+                    //if (result.isOk == false)
+                    //    alert(result.message);
+                    //debugger
+                    saveTopPicksList();
+                },
+                async: false
+            });
+        }
+
+        function saveTopPicksList()
+        {
+            var x = 0;
+
+            $("#selectedGolfers li").each(function(){
+                var golferId = $(this)[0].id;
+
+                $.ajax({
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        entrantId: 1, // entrantId
+                        golferId: golferId,
+                        seqNo: x 
+                    },
+                    url: "/TopPickList/SaveTopPicksList",
+                    success: function (data) {
+                        //alert(data);                        
+                    }
+                });
+
+                x++;
+            });
+        }
+
+        function removeTopPickEntry(golferId)
+        {
+            $('#' + golferId).remove();
+            deleteAndSaveTopPicksList();
+        }
+
+    </script>
+}

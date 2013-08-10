@@ -1,0 +1,62 @@
+﻿@model MajorsPool.Models.Pick
+
+@{
+    ViewBag.Title = "Create";
+    // Define DropDown Lists
+    var EntrantList = new SelectList(ViewBag.EntrantList, "EntrantId", "FirstName");
+    var GolferList = new SelectList(ViewBag.GolferList, "GolferId", "FirstName");
+}
+
+<h2>Create</h2>
+
+@using (Html.BeginForm()) {
+    
+    @Html.ValidationSummary(true)
+
+    <fieldset>
+        <legend>Pick</legend>
+        
+        <table>
+            <tr>
+                <td>
+                    <span class="editor-label">
+                        @*@Html.LabelFor(model => model.SeqNo)*@
+                        Pick:
+                    </span>
+                </td>
+                <td>
+                    <span class="editor-field, sequence">
+                        @Html.EditorFor(model => model.SeqNo)
+                        @Html.ValidationMessageFor(model => model.SeqNo)
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="editor-label">
+                        @*@Html.LabelFor(model => model.Entrant.EntrantId)*@
+                        Entrant:
+                    </span>
+                </td>
+                <td>
+                    <span class="editor-field">
+                        @Html.DropDownListFor(model => model.Entrant.EntrantId, new SelectList(ViewBag.EntrantList, "EntrantId", "DisplayName"))
+                        @Html.ValidationMessageFor(model => model.Entrant.EntrantId)
+                    </span>
+                </td>
+            </tr>
+        </table>
+
+        <p>
+            <input type="submit" value="Create" />
+        </p>
+    </fieldset>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

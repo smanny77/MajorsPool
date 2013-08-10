@@ -1,0 +1,151 @@
+﻿@model MajorsPool.Models.Pick
+
+@{
+    ViewBag.Title = "Edit";
+}
+
+<h2>Edit</h2>
+
+@using (Html.BeginForm()) {
+    @Html.ValidationSummary(true)
+
+    <fieldset>
+        <legend>Pick</legend>
+
+        <div class="editor-label">
+            @Html.HiddenFor(model => model.PickId)
+        </div>
+
+        <table style="border-color: black; border-width: 1px; border-style: none">
+            @if (Convert.ToBoolean(Session["Admin"]))
+            {
+                <tr>
+                    <td style="text-align: right">
+                        <span class="editor-label">
+                            ID:
+                        </span>
+                    </td>
+                    <td style="border: none; border-width: 1px; padding-right: 15px">
+                        @Html.DisplayFor(model => model.PickId)
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td style="border: none; border-width: 1px; padding-right: 15px">
+                    </td>
+                    <td></td>
+                </tr>
+            }
+
+            <tr>
+                <td style="text-align: right">
+                    <span class="editor-label">
+                        Pick:
+                    </span>
+                </td>
+                <td>
+                    <span class="editor-field, sequence">
+                        @if (Convert.ToBoolean(Session["Admin"]))
+                        {
+                            @Html.EditorFor(model => model.SeqNo)
+                        }
+                        else
+                        {
+                            @Html.DisplayFor(model => model.SeqNo)
+                            @Html.HiddenFor(model => model.SeqNo)
+                        }
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: right">
+                    <span class="editor-label">
+                        Entrant:
+                    </span>
+                </td>
+                <td>
+                    <span class="editor-field">
+                        @Html.DisplayFor(model => model.Entrant.DisplayName)
+                        @Html.HiddenFor(model => model.Entrant.EntrantId)
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: right">
+                    <span class="editor-label">
+                        Golfer:
+                    </span>
+                </td>
+                <td>
+                    <span id="spanGolferList" class="editor-field">
+                        @if (ViewBag.GolferList != null)
+                        {
+                            @Html.DropDownListFor(model => model.Golfer.GolferId, new SelectList(ViewBag.GolferList, "GolferId", "DisplayName"))
+                        }
+                    </span>
+                </td>
+            </tr>
+        </table>
+
+        <p>
+            <input type="submit" value="Save" />
+        </p>
+    </fieldset>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+<div id="dialog-form" title="Verify Identity">
+  <form>
+      <fieldset>
+        <span id="LabelFirstName">@Model.Entrant.FirstName</span>, enter your security code:
+        <input type="password" name="password" id="password" value="" class="text ui-widget-content ui-corner-all" />
+      </fieldset>
+  </form>
+</div>
+
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        $(document).ready(function () {
+            
+            $("#dialog-form").dialog({
+                autoOpen: false,
+                height: 300,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "Submit": function () {
+                        var bValid = true;
+
+                        if ($(document)[0].location.search.indexOf("?") >= 0) {
+                            $(document)[0].location.href += "&Password=" + $("#password").val();
+                        }
+                        else {
+                            $(document)[0].location.href += "?Password=" + $("#password").val();
+                        }
+
+                        $(this).dialog("close");
+                    },
+                    Cancel: function () {
+                        $(this).dialog("close");
+                    }
+                },
+                close: function () {                    
+                }
+            });
+
+            if ($("#spanGolferList").text().trim() == "")
+            {
+                $("#dialog-form").dialog("open");
+            }
+        });
+    </script>
+}

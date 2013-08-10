@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ServiceConfiguration serviceName="MajorsPoolEmailService.Azure" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration" osFamily="3" osVersion="*" schemaVersion="2012-10.1.8">
+  <Role name="MajorsPoolEmailService">
+    <Instances count="1" />
+    <ConfigurationSettings>
+      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="DefaultEndpointsProtocol=https;AccountName=majorspoolservice;AccountKey=VeF+QxRUb3klOixex58zem4XXOuShPSQsJH6oiqc6CqbLsEvWVHz/7/EN9UnZgv3mSMdA54t9JIMfkT6lfe5Ew==" />
+    </ConfigurationSettings>
+  </Role>
+</ServiceConfiguration>

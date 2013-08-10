@@ -1,0 +1,36 @@
+﻿@model MajorsPool.Models.Pick
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<fieldset>
+    <legend>Pick</legend>
+
+    <div class="display-label">
+         @Html.DisplayNameFor(model => model.Golfer.FirstName)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.Golfer.FirstName)
+    </div>
+
+    <div class="display-label">
+         @Html.DisplayNameFor(model => model.Entrant.FirstName)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.Entrant.FirstName)
+    </div>
+
+    <div class="display-label">
+         @Html.DisplayNameFor(model => model.PickTime)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.PickTime)
+    </div>
+</fieldset>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id=Model.PickId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
